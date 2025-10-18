@@ -1,76 +1,136 @@
-import { useEffect, useState, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useState } from "react";
 
-export default function Home(){
-  const [items,setItems] = useState([])
-  const [loading,setLoading] = useState(true)
-  const [selected,setSelected] = useState(null)
-  const [bannerIndex,setBannerIndex] = useState(0)
-  const videoRef = useRef(null)
+export default function Home() {
+  const [peliculas, setPeliculas] = useState([]);
+  const [seleccionada, setSeleccionada] = useState(null);
 
-  useEffect(()=>{
-    const url = import.meta.env.VITE_GIST_RAW || ''
-    if(!url){ setLoading(false); return }
-    fetch(url).then(r=>r.json()).then(d=>{ setItems(d || []); setLoading(false) }).catch(e=>{ console.error(e); setLoading(false) })
-  },[])
-
-  useEffect(()=>{
-    if(items.length===0) return
-    const t = setInterval(()=> setBannerIndex(i=> (i+1)%items.length),5000)
-    return ()=> clearInterval(t)
-  },[items])
-
-  useEffect(()=>{
-    if(!selected) return
-    if(videoRef.current){ videoRef.current.pause(); videoRef.current.load(); videoRef.current.play().catch(()=>{}) }
-  },[selected])
-
-  if(loading) return <div className="container" style={{paddingTop:120}}>Cargando catálogo…</div>
-
-  const banner = items[bannerIndex]
+  useEffect(() => {
+    fetch("/catalogo.json")
+      .then((res) => res.json())
+      .then((data) => setPeliculas(data))
+      .catch((err) => console.error("Error al cargar el catálogo:", err));
+  }, []);
 
   return (
-    <div>
-      {banner && <motion.div key={banner.id} className="banner">
-        <img src={banner.imagen} alt={banner.titulo} />
-        <div style={{position:'absolute',left:24,bottom:40,maxWidth:700}}>
-          <h1 style={{fontSize:32,margin:0}}>{banner.titulo}</h1>
-          <p style={{maxWidth:600,opacity:0.9}}>{banner.descripcion?.slice(0,220)}...</p>
-          <button className="btn" onClick={()=>setSelected(banner)} style={{marginTop:12}}>▶ Ver ahora</button>
-        </div>
-      </motion.div>}
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#000",
+        color: "#fff",
+        padding: "2rem",
+        fontFamily: "Poppins, sans-serif",
+      }}
+    >
+      <h1 style={{ textAlign: "center", marginBottom: "2rem", fontSize: "2rem" }}>
+        🎬 The Mayor
+      </h1>
 
-      <div className="container" style={{paddingTop:24}}>
-        <h2 style={{marginTop:0}}>Catálogo</h2>
-        <div className="grid">
-          {items.map(it=> (
-            <div key={it.id} className="card" onClick={()=>setSelected(it)} style={{cursor:'pointer'}}>
-              <img src={it.imagen} alt="" style={{width:'100%',height:260,objectFit:'cover'}}/>
-              <div style={{padding:12}}>
-                <h3 style={{margin:0}}>{it.titulo}</h3>
-                <p style={{margin:'6px 0 0',color:'#9ca3af',fontSize:13}}>{it.genero} • {it.anio}</p>
-                <p style={{marginTop:8,fontSize:13,color:'#d1d5db'}}>{it.descripcion?.slice(0,120)}...</p>
-              </div>
+      {/* Catálogo de películas */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: "1.5rem",
+          justifyItems: "center",
+        }}
+      >
+        {peliculas.map((p) => (
+          <div
+            key={p.id}
+            style={{
+              backgroundColor: "#111",
+              borderRadius: "12px",
+              overflow: "hidden",
+              width: "220px",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
+              cursor: "pointer",
+              transition: "transform 0.3s ease",
+            }}
+            onClick={() => setSeleccionada(p)}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            <img
+              src={p.imagen}
+              alt={p.titulo}
+              style={{
+                width: "100%",
+                height: "330px",
+                objectFit: "cover",
+              }}
+            />
+            <div style={{ padding: "0.8rem" }}>
+              <h3 style={{ margin: "0.3rem 0", fontSize: "1rem", fontWeight: "600" }}>
+                {p.titulo}
+              </h3>
+              <p style={{ margin: "0", fontSize: "0.9rem", color: "#aaa" }}>
+                {p.genero} • {p.anio}
+              </p>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
-      {selected && (
-        <div className="modal-bg" onClick={()=>setSelected(null)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <button style={{float:'right'}} onClick={()=>setSelected(null)}>✕</button>
-            <h3>{selected.titulo}</h3>
-            <p style={{color:'#9ca3af'}}>{selected.descripcion}</p>
-            <div style={{marginTop:12,aspectRatio:'16/9'}}>
-              <video ref={videoRef} controls playsInline>
-                <source src={ (selected.video||selected.vídeo||'').trim() } type="video/mp4" />
-                Tu navegador no soporta reproducción de video.
-              </video>
+      {/* Modal de reproducción */}
+      {seleccionada && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.85)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+            padding: "2rem",
+          }}
+          onClick={() => setSeleccionada(null)}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "80%",
+              maxWidth: "900px",
+              backgroundColor: "#111",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 0 25px rgba(0,0,0,0.8)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <video
+              controls
+              autoPlay
+              style={{ width: "100%", height: "auto", borderRadius: "12px" }}
+            >
+              <source src={seleccionada.video} type="video/mp4" />
+              Tu navegador no soporta la reproducción de video.
+            </video>
+            <div style={{ padding: "1rem" }}>
+              <h2 style={{ margin: "0.5rem 0" }}>{seleccionada.titulo}</h2>
+              <p style={{ color: "#ccc" }}>{seleccionada.descripcion}</p>
+              <button
+                onClick={() => setSeleccionada(null)}
+                style={{
+                  marginTop: "1rem",
+                  background: "#e50914",
+                  border: "none",
+                  color: "#fff",
+                  padding: "0.6rem 1rem",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
