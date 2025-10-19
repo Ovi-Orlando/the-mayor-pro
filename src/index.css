@@ -1,0 +1,67 @@
+body {
+  background-color: #0b0b0b;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.titulo {
+  text-align: center;
+  margin: 2rem 0;
+  font-size: 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 2rem;
+}
+
+.card {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.card:hover {
+  transform: scale(1.08);
+}
+
+.info {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.player-container {
+  padding: 2rem;
+  text-align: center;
+}
+
+.video-player {
+  width: 90%;
+  max-width: 900px;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.volver {
+  background: #e50914;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.volver:hover {
+  background: #f40612;
+}
