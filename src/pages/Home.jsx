@@ -14,13 +14,17 @@ export default function Home() {
   if (seleccionada) {
     return (
       <div className="player-container">
-        <button className="volver" onClick={() => setSeleccionada(null)}>← Volver</button>
+        <button className="volver" onClick={() => setSeleccionada(null)}>
+          ← Volver al catálogo
+        </button>
         <video
           controls
           autoPlay
           className="video-player"
-          src={seleccionada.video}
-        />
+          src={seleccionada.video.trim()}
+        >
+          Tu navegador no soporta reproducción de video.
+        </video>
         <h2>{seleccionada.titulo}</h2>
         <p>{seleccionada.descripcion}</p>
       </div>
@@ -33,7 +37,7 @@ export default function Home() {
       <div className="grid">
         {peliculas.map((peli) => (
           <div key={peli.id} className="card" onClick={() => setSeleccionada(peli)}>
-            <img src={peli.imagen} alt={peli.titulo} />
+            <img src={peli.imagen.trim()} alt={peli.titulo} />
             <div className="info">
               <h3>{peli.titulo}</h3>
               <p>{peli.genero} • {peli.anio}</p>
