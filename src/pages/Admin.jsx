@@ -21,15 +21,15 @@ export default function Admin(){
   if(!allowed) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#000',color:'#fff'}}>Acceso restringido</div>
 
   async function saveAll(newItems){
-    const res = await fetch('/api/gist', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items:newItems})})
-    if(!res.ok){ alert('Error al guardar'); return false }
+    const res = await fetch('/api/gist', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items: newItems })})
+    if(!res.ok){ alert('Error al guardar'); console.error(await res.text()); return false }
     alert('Guardado con éxito')
     setItems(newItems)
     return true
   }
 
   function add(){
-    setItems([{ id: Date.now(), titulo:'Nuevo título', genero:'', anio:new Date().getFullYear(), descripcion:'', imagen:'', video:'', tipo:'Película' }, ...items])
+    setItems([{ id: Date.now(), titulo:'Nuevo título', genero:'Sin categoría', anio:new Date().getFullYear(), descripcion:'', imagen:'', video:'', tipo:'Película' }, ...items])
   }
 
   function update(idx, field, value){

@@ -1,23 +1,24 @@
-The Mayor Pro — Final package (prepared for Ovi-Orlando)
+The Mayor Pro — Netflix Edition (final package)
 
 Included files:
-- src/ (React app)
-- api/gist.js (serverless to PATCH your gist)
-- public/logo.png (your logo image)
+- src/ (React app with Home, Admin, components)
+- api/gist.js (serverless function to GET/POST the gist content)
+- public/logo.png (your logo)
 
-IMPORTANT - After pushing to GitHub and connecting to Vercel, set these Environment Variables in Vercel (Project Settings -> Environment Variables):
+IMPORTANT: After you push to GitHub and connect to Vercel, add these Environment Variables in Vercel (Project Settings -> Environment Variables):
 
-- VITE_GIST_RAW = https://gist.githubusercontent.com/Ovi-Orlando/58715e8bdc303394122d0fbf4605faf9/raw/8853c9c0aedae09b282a1c9f5e4f1d09f496375b/gistfile1.txt
+- VITE_GIST_RAW = https://gist.githubusercontent.com/Ovi-Orlando/58715e8bdc303394122d0fbf4605faf9/raw/98f2699f2807e6a51cab660731519386f93dea86/gistfile1.txt
 - GIST_ID = 58715e8bdc303394122d0fbf4605faf9
-- GIST_FILENAME = catalogo.json
-- GITHUB_TOKEN = <your personal token with gist scope> (server-side only, do NOT prefix with VITE_)
+- GIST_FILENAME = catalogo.json (optional)
+- GITHUB_TOKEN = <your personal access token with gist scope>  (server-side only - do NOT prefix with VITE_)
 
 Admin access:
 - URL: /admin?key=admin_ovi
 - Add / edit / delete entries and press 'Guardar' to update the Gist.
 
-Notes on video playback:
-- Player uses HTML5 <video>. Provide direct MP4 URLs in the 'video' field of your gist. Archive.org direct links should work.
-- If your token was exposed anywhere, revoke it in GitHub settings and create a new one with 'gist' scope.
+Categories:
+- The Home page auto-detects genres from the 'genero' field in your JSON and shows them as chips to filter.
 
-Enjoy! - Generated for you
+Notes:
+- Provide direct MP4 links for 'video' field for smooth playback.
+- If token was exposed, revoke it in GitHub and create a new one with 'gist' scope.
