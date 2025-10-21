@@ -1,44 +1,55 @@
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Método no permitido" });
+    if (req.method === 'GET') {
+      const gistId = process.env.GIST_ID;
+      const token = process.env.GITHUB_TOKEN;
+      if (!gistId) return res.status(500).json({ error: 'GIST_ID not set' });
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, { headers: token ? { Authorization: `token ${token}` } : {} });
+      const gist = await r.json();
+      const filename = process.env.GIST_FILENAME || 'movies.json';
+      const content = gist.files?.[filename]?.content || '[]';
+      return res.status(200).json(JSON.parse(content));
     }
 
-    // Parseamos el cuerpo correctamente
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    if (req.method === 'POST') {
+      // expects body: { items: [...] } or full object { items: [...] }
+      const body = await new Promise((resolve, reject) => {
+        let data = '';
+        req.on('data', chunk => data += chunk);
+        req.on('end', () => resolve(JSON.parse(data)));
+        req.on('error', reject);
+      });
 
-    // Validamos que exista contenido
-    if (!body?.content) {
-      return res.status(400).json({ error: "Falta el contenido a guardar" });
+      const items = body.items || body;
+      if (!items) return res.status(400).json({ error: 'Missing items' });
+
+      const gistId = process.env.GIST_ID;
+      const token = process.env.GITHUB_TOKEN;
+      if (!gistId || !token) return res.status(500).json({ error: 'GIST_ID or GITHUB_TOKEN not set' });
+
+      // fetch gist to get filename
+      const g = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { Authorization: `token ${token}` } });
+      const gist = await g.json();
+      const filename = process.env.GIST_FILENAME || Object.keys(gist.files || {})[0] || 'movies.json';
+
+      const content = JSON.stringify(items, null, 2);
+      const patch = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { [filename]: { content } } })
+      });
+
+      if (!patch.ok) {
+        const text = await patch.text();
+        return res.status(500).json({ error: 'GitHub API error', detail: text });
+      }
+
+      return res.status(200).json({ ok: true });
     }
 
-    // Construimos la solicitud a GitHub Gist
-    const response = await fetch(`https://api.github.com/gists/${process.env.GIST_ID}`, {
-      method: "PATCH",
-      headers: {
-        "Authorization": `token ${process.env.GITHUB_TOKEN}`,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        files: {
-          [process.env.GIST_FILENAME || "gistfile1.txt"]: {
-            content: body.content,
-          },
-        },
-      }),
-    });
-
-    // Validamos respuesta de GitHub
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("GitHub API error:", errorText);
-      return res.status(500).json({ error: "Error al guardar en Gist" });
-    }
-
-    return res.status(200).json({ message: "Guardado con éxito" });
+    return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error("Error interno:", err);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    console.error('api/gist error', err);
+    return res.status(500).json({ error: String(err) });
   }
 }

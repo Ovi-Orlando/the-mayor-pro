@@ -21,8 +21,9 @@ export default function Admin(){
   if(!allowed) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#000',color:'#fff'}}>Acceso restringido</div>
 
   async function saveAll(newItems){
+    // send full array to server; server will replace gist content
     const res = await fetch('/api/gist', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items: newItems })})
-    if(!res.ok){ alert('Error al guardar'); console.error(await res.text()); return false }
+    if(!res.ok){ const t = await res.text(); console.error('save error', t); alert('Error al guardar: ' + t); return false }
     alert('Guardado con éxito')
     setItems(newItems)
     return true
@@ -49,7 +50,7 @@ export default function Admin(){
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <h2>Admin</h2>
         <div style={{display:'flex',gap:8,marginBottom:12}}>
-          <button onClick={add} className="btn">+ Agregar</button>
+          <button onClick={add} style={{background:'#e50914',border:'none',color:'#fff',padding:'8px 12px',borderRadius:8}}>+ Agregar</button>
           <button onClick={()=>saveAll(items)} style={{background:'#06b6d4',border:'none',padding:'8px 12px',borderRadius:8}}>Guardar</button>
         </div>
 

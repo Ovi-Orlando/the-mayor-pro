@@ -28,14 +28,14 @@ export default function Home(){
       {banner && <div className='banner'><img src={(banner.imagen||'').trim()} alt={banner.titulo} /></div>}
 
       <div style={{maxWidth:1200,margin:'0 auto',padding:20}}>
-        <h2 className='section-title'>Categorías</h2>
-        <div className='row' style={{marginBottom:12}}>
+        <h2 style={{marginTop:12}}>Categorías</h2>
+        <div style={{display:'flex',gap:8,overflow:'auto',paddingBottom:8,marginBottom:12}}>
           {categories.map(cat=> (
-            <div key={cat} className={'category-chip '+(cat===activeCat?'active-chip':'')} onClick={()=>setActiveCat(cat)}>{cat}</div>
+            <div key={cat} onClick={()=>setActiveCat(cat)} style={{padding:'6px 10px',borderRadius:999,background: cat===activeCat ? '#e50914' : '#111',cursor:'pointer'}}>{cat}</div>
           ))}
         </div>
 
-        <h2 className='section-title'>Catálogo</h2>
+        <h2 style={{marginTop:6}}>Catálogo</h2>
         <div className='grid'>
           {filtered.map(it=> <MovieCard key={it.id} item={it} onClick={setSelected} />)}
         </div>
@@ -49,10 +49,10 @@ export default function Home(){
                 <h3 style={{margin:0}}>{selected.titulo}</h3>
                 <small style={{color:'#9ca3af'}}>{selected.genero} • {selected.anio}</small>
               </div>
-              <button className='btn' onClick={()=>setSelected(null)}>Cerrar</button>
+              <button style={{background:'#e50914',border:'none',color:'#fff',padding:'8px 12px',borderRadius:8}} onClick={()=>setSelected(null)}>Cerrar</button>
             </div>
             <div style={{marginTop:12,aspectRatio:'16/9'}}>
-              <video controls autoPlay>
+              <video controls autoPlay className="video">
                 <source src={(selected.video||selected.vídeo||'').trim()} type='video/mp4' />
                 Tu navegador no soporta reproducción de video.
               </video>
