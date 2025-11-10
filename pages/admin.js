@@ -1,77 +1,117 @@
-import { useState } from "react";
-
-export default function AdminPage() {
-  const [key, setKey] = useState("");
-  const [authorized, setAuthorized] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (key === "admin_ovi") {
-      setAuthorized(true);
-      setError("");
-    } else {
-      setError("Clave incorrecta");
-    }
-  };
-
-  if (!authorized) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          backgroundColor: "#0b0b0b",
-          color: "white",
-          flexDirection: "column",
-        }}
-      >
-        <h2 className="text-2xl mb-4">Acceso restringido</h2>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <input
-            type="password"
-            placeholder="Introduce tu clave"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-              border: "1px solid #444",
-              background: "#1b1b1b",
-              color: "white",
-              outline: "none",
-              width: "250px",
-              textAlign: "center",
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              marginTop: "15px",
-              background: "#e50914",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Entrar
-          </button>
-        </form>
-        {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-      </div>
-    );
-  }
-
-  // 👇 Panel administrativo una vez validado
+if (!ok)
   return (
-    <div style={{ padding: "20px", background: "#0b0b0b", color: "white", minHeight: "100vh" }}>
-      <h1 className="text-3xl font-bold mb-4">Panel de Administración</h1>
-      <p>Bienvenido, Admin 👑</p>
-      {/* Aquí sigue tu código del panel original */}
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#000',
+        color: '#fff',
+        fontSize: '1.2rem',
+      }}
+    >
+      Acceso restringido
     </div>
   );
-}
+
+return (
+  <div style={{ minHeight: '100vh', background: '#000', color: '#fff', padding: 20 }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <h2 style={{ marginBottom: 12 }}>Panel de administración</h2>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <button
+          onClick={add}
+          style={{ background: '#e50914', color: '#fff', border: 0, padding: 8 }}
+        >
+          + Agregar
+        </button>
+        <button
+          onClick={() => saveAll(items)}
+          style={{ background: '#06b6d4', color: '#fff', border: 0, padding: 8 }}
+        >
+          Guardar
+        </button>
+      </div>
+
+      {loading ? (
+        <p>Cargando…</p>
+      ) : (
+        items.map((it, idx) => (
+          <div
+            key={it.id}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '180px 1fr 120px',
+              gap: 12,
+              background: '#071018',
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 12,
+            }}
+          >
+            <img
+              src={it.imagen || '/logo.png'}
+              style={{
+                width: 180,
+                height: 110,
+                objectFit: 'contain', // <-- cambio clave
+                backgroundColor: '#111',
+                borderRadius: 8,
+              }}
+              alt=""
+            />
+            <div>
+              <input
+                value={it.titulo || ''}
+                onChange={(e) => update(idx, 'titulo', e.target.value)}
+                placeholder="Título"
+                style={{ width: '100%', marginBottom: 8 }}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  value={it.genero || ''}
+                  onChange={(e) => update(idx, 'genero', e.target.value)}
+                  placeholder="Género"
+                  style={{ width: '50%' }}
+                />
+                <input
+                  value={it.anio || ''}
+                  onChange={(e) => update(idx, 'anio', e.target.value)}
+                  placeholder="Año"
+                  style={{ width: '50%' }}
+                />
+              </div>
+              <input
+                value={it.descripcion || ''}
+                onChange={(e) => update(idx, 'descripcion', e.target.value)}
+                placeholder="Descripción"
+                style={{ marginTop: 8 }}
+              />
+              <input
+                value={it.imagen || ''}
+                onChange={(e) => update(idx, 'imagen', e.target.value)}
+                placeholder="URL imagen"
+                style={{ marginTop: 8 }}
+              />
+              <input
+                value={it.video || ''}
+                onChange={(e) => update(idx, 'video', e.target.value)}
+                placeholder="URL video"
+                style={{ marginTop: 8 }}
+              />
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <button
+                onClick={() => remove(idx)}
+                style={{ background: '#b91c1c', color: '#fff', border: 0, padding: 8 }}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+);
