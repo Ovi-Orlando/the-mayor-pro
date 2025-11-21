@@ -30,6 +30,23 @@ export default function Home() {
     }
   };
 
+  // ---- ADMIN SECRETO ACTIVADO CON SHIFT + A ----
+useEffect(() => {
+  function detectSecretKey(e) {
+    if (e.shiftKey && e.key.toLowerCase() === 'a') {
+      const pass = prompt("Introduce tu contraseña de administrador:");
+      if (pass === "admin_ovi") {
+        window.location.href = "/admin";
+      } else if (pass !== null) {
+        alert("Contraseña incorrecta.");
+      }
+    }
+  }
+  window.addEventListener("keydown", detectSecretKey);
+  return () => window.removeEventListener("keydown", detectSecretKey);
+}, []);
+// ---------------------------------------------
+
   return (
     <div style={{ background: '#000', color: '#fff', minHeight: '100vh' }}>
       <header style={{
