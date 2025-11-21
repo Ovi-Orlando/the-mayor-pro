@@ -13,7 +13,11 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/gist')
       .then((r) => r.json())
-      .then((d) => setMovies(d || []))
+      .then(d => {
+  // Asegura que d sea un arreglo
+  if (Array.isArray(d)) setMovies(d)
+  else setMovies([])
+})
       .catch(() => setMovies([]));
   }, []);
 
