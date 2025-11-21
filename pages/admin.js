@@ -84,13 +84,12 @@ export default function AdminPage() {
     );
   }
 
-  // ----- SI YA ESTÁ AUTORIZADO → Panel real -----
   return <AdminRealPanel />;
 }
 
-/* --------------------------
-   AQUÍ PONES TU PANEL ORIGINAL
---------------------------- */
+/* ============================
+     PANEL ADMIN REAL
+============================ */
 
 function AdminRealPanel() {
   const [items, setItems] = useState([]);
@@ -123,13 +122,14 @@ function AdminRealPanel() {
       {
         id: Date.now(),
         titulo: "Nuevo",
+        tipo: "Película",   // <-- nuevo campo
         genero: "Sin categoría",
         anio: new Date().getFullYear(),
         descripcion: "",
         imagen: "",
         video: "",
       },
-      ...items
+      ...items,
     ]);
   }
 
@@ -172,6 +172,7 @@ function AdminRealPanel() {
               borderRadius: 8,
               marginBottom: 12,
             }}>
+
               <img
                 src={it.imagen || "/logo.png"}
                 alt=""
@@ -179,8 +180,28 @@ function AdminRealPanel() {
               />
 
               <div>
+                {/* Título */}
                 <input value={it.titulo} onChange={(e) => update(idx, "titulo", e.target.value)} placeholder="Título" style={{ width: "100%", marginBottom: 8 }} />
 
+                {/* *** NUEVO CAMPO: TIPO *** */}
+                <select
+                  value={it.tipo || "Película"}
+                  onChange={(e) => update(idx, "tipo", e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: 8,
+                    marginBottom: 8,
+                    background: "#111",
+                    color: "#fff",
+                    borderRadius: 6,
+                    border: "1px solid #333"
+                  }}
+                >
+                  <option value="Película">Película</option>
+                  <option value="Serie">Serie</option>
+                </select>
+
+                {/* Género + Año */}
                 <div style={{ display: "flex", gap: 8 }}>
                   <input value={it.genero} onChange={(e) => update(idx, "genero", e.target.value)} placeholder="Género" style={{ width: "50%" }} />
                   <input value={it.anio} onChange={(e) => update(idx, "anio", e.target.value)} placeholder="Año" style={{ width: "50%" }} />
@@ -196,6 +217,7 @@ function AdminRealPanel() {
                   Eliminar
                 </button>
               </div>
+
             </div>
           ))
         )}
