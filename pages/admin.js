@@ -5,14 +5,12 @@ export default function AdminPage() {
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
 
-  // Si ya inició sesión antes
   useEffect(() => {
     if (sessionStorage.getItem("admin_ok") === "yes") {
       setAuthorized(true);
     }
   }, []);
 
-  // Login manejado sin redirecciones externas
   function handleLogin(e) {
     e.preventDefault();
 
@@ -24,7 +22,6 @@ export default function AdminPage() {
     }
   }
 
-  // Si NO está autorizado → Mostrar pantalla de login
   if (!authorized) {
     return (
       <div style={{
@@ -122,12 +119,13 @@ function AdminRealPanel() {
       {
         id: Date.now(),
         titulo: "Nuevo",
-        tipo: "Película",   // <-- nuevo campo
+        tipo: "Película",
         genero: "Sin categoría",
         anio: new Date().getFullYear(),
         descripcion: "",
         imagen: "",
         video: "",
+        episodios: []  // ← soporte para series
       },
       ...items,
     ]);
@@ -180,10 +178,9 @@ function AdminRealPanel() {
               />
 
               <div>
-                {/* Título */}
                 <input value={it.titulo} onChange={(e) => update(idx, "titulo", e.target.value)} placeholder="Título" style={{ width: "100%", marginBottom: 8 }} />
 
-                {/* *** NUEVO CAMPO: TIPO *** */}
+                {/* Tipo Película/Serie */}
                 <select
                   value={it.tipo || "Película"}
                   onChange={(e) => update(idx, "tipo", e.target.value)}
@@ -201,7 +198,6 @@ function AdminRealPanel() {
                   <option value="Serie">Serie</option>
                 </select>
 
-                {/* Género + Año */}
                 <div style={{ display: "flex", gap: 8 }}>
                   <input value={it.genero} onChange={(e) => update(idx, "genero", e.target.value)} placeholder="Género" style={{ width: "50%" }} />
                   <input value={it.anio} onChange={(e) => update(idx, "anio", e.target.value)} placeholder="Año" style={{ width: "50%" }} />
@@ -210,6 +206,84 @@ function AdminRealPanel() {
                 <input value={it.descripcion} onChange={(e) => update(idx, "descripcion", e.target.value)} placeholder="Descripción" style={{ marginTop: 8 }} />
                 <input value={it.imagen} onChange={(e) => update(idx, "imagen", e.target.value)} placeholder="URL imagen" style={{ marginTop: 8 }} />
                 <input value={it.video} onChange={(e) => update(idx, "video", e.target.value)} placeholder="URL video" style={{ marginTop: 8 }} />
+
+                {/* ================================
+                      EPISODIOS (solo en serie)
+                ================================= */}
+                {it.tipo === "Serie" && (
+                  <div style={{
+                    marginTop: 12,
+                    padding: 12,
+                    background: "#0b1620",
+                    borderRadius: 6
+                  }}>
+                    <h4 style={{ marginBottom: 6 }}>Episodios</h4>
+
+                    {(it.episodios || []).map((ep, eidx) => (
+                      <div key={eidx} style={{
+                        display: "flex",
+                        gap: 6,
+                        marginBottom: 6
+                      }}>
+                        <input
+                          value={ep.titulo}
+                          onChange={(e) => {
+                            const copy = [...items];
+                            copy[idx].episodios[eidx].titulo = e.target.value;
+                            setItems(copy);
+                          }}
+                          placeholder="Título episodio"
+                          style={{ flex: 1 }}
+                        />
+
+                        <input
+                          value={ep.url}
+                          onChange={(e) => {
+                            const copy = [...items];
+                            copy[idx].episodios[eidx].url = e.target.value;
+                            setItems(copy);
+                          }}
+                          placeholder="URL episodio"
+                          style={{ flex: 2 }}
+                        />
+
+                        <button
+                          onClick={() => {
+                            const copy = [...items];
+                            copy[idx].episodios.splice(eidx, 1);
+                            setItems(copy);
+                          }}
+                          style={{
+                            background: "#b91c1c",
+                            color: "#fff",
+                            padding: "6px 10px",
+                            borderRadius: 4
+                          }}
+                        >
+                          X
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      onClick={() => {
+                        const copy = [...items];
+                        if (!copy[idx].episodios) copy[idx].episodios = [];
+                        copy[idx].episodios.push({ titulo: "", url: "" });
+                        setItems(copy);
+                      }}
+                      style={{
+                        background: "#1d4ed8",
+                        color: "#fff",
+                        padding: "6px 10px",
+                        borderRadius: 4,
+                        marginTop: 6
+                      }}
+                    >
+                      + Agregar episodio
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div style={{ textAlign: "right" }}>
