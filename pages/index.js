@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 export default function Home() {
   const [movies, setMovies] = useState([]);
   const [sel, setSel] = useState(null);
+  const [currentVideo, setCurrentVideo] = useState("");
 
   // Cargar películas desde el gist
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function Home() {
       .catch(() => setMovies([]));
   }, []);
 
-  // ----------- ACCESO OCULTO ADMIN: SHIFT + A -----------
+  // ACCESO OCULTO ADMIN: SHIFT + A
   useEffect(() => {
     function secret(e) {
       if (e.shiftKey && e.key.toLowerCase() === "a") {
@@ -36,7 +37,19 @@ export default function Home() {
     window.addEventListener("keydown", secret);
     return () => window.removeEventListener("keydown", secret);
   }, []);
-  // ------------------------------------------------------
+
+  // Cuando opens un item, decidir qué video reproducir
+  function openItem(item) {
+    setSel(item);
+
+    if (Array.isArray(item.capitulos) && item.capitulos.length > 0) {
+      // SERIES → reproducir primer capítulo
+      setCurrentVideo(item.capitulos[0].url.trim());
+    } else {
+      // PELÍCULA → usar url normal
+      setCurrentVideo((item.video || "").trim());
+    }
+  }
 
   return (
     <div style={{ background: "#000", color: "#fff", minHeight: "100vh" }}>
@@ -93,7 +106,7 @@ export default function Home() {
                   <p>{m.descripcion || "Sin descripción"}</p>
 
                   <button
-                    onClick={() => setSel(m)}
+                    onClick={() => openItem(m)}
                     style={{
                       background: "#e50914",
                       color: "#fff",
@@ -120,8 +133,13 @@ export default function Home() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "auto",
+            padding: 20
           }}
-          onClick={() => setSel(null)}
+          onClick={() => {
+            setSel(null);
+            setCurrentVideo("");
+          }}
         >
           <div
             style={{ width: "90%", maxWidth: 1000 }}
@@ -129,15 +147,39 @@ export default function Home() {
           >
             <h3 style={{ margin: 0 }}>{sel.titulo}</h3>
 
-            <div style={{ aspectRatio: "16/9" }}>
+            {/* Reproductor */}
+            <div style={{ aspectRatio: "16/9", marginTop: 10 }}>
               <video controls autoPlay style={{ width: "100%", height: "100%" }}>
-                <source
-                  src={(sel.video || sel.vídeo || "").trim()}
-                  type="video/mp4"
-                />
+                <source src={currentVideo} type="video/mp4" />
                 Tu navegador no soporta video.
               </video>
             </div>
+
+            {/* Lista de capítulos si aplica */}
+            {Array.isArray(sel.capitulos) && sel.capitulos.length > 0 && (
+              <div style={{ marginTop: 20 }}>
+                <h4>Capítulos</h4>
+                <ul>
+                  {sel.capitulos.map((c, i) => (
+                    <li key={i} style={{ marginBottom: 8 }}>
+                      <button
+                        onClick={() => setCurrentVideo(c.url.trim())}
+                        style={{
+                          background: "#1f2937",
+                          color: "#fff",
+                          padding: "6px 12px",
+                          borderRadius: 6,
+                          border: 0,
+                          cursor: "pointer"
+                        }}
+                      >
+                        {c.nombre || `Capítulo ${i + 1}`}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <p style={{ color: "#d1d5db" }}>{sel.descripcion}</p>
           </div>
