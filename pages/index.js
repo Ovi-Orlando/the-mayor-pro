@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [movies, setMovies] = useState([]);
   const [sel, setSel] = useState(null);
-  const [currentVideo, setCurrentVideo] = useState("");
+  const [currentEp, setCurrentEp] = useState(0);
 
   // Cargar películas desde el gist
   useEffect(() => {
-    fetch('/api/gist')
+    fetch("/api/gist")
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d)) {
@@ -21,34 +21,46 @@ export default function Home() {
       .catch(() => setMovies([]));
   }, []);
 
-  // ACCESO OCULTO ADMIN: SHIFT + A
+  // Acceso oculto admin (Shift + A)
   useEffect(() => {
     function secret(e) {
       if (e.shiftKey && e.key.toLowerCase() === "a") {
         const pass = prompt("Introduce tu contraseña:");
         if (pass === "admin_ovi") {
-          window.location.href = "/admin?key=admin_ovi";
+          window.location.href = "/admin";
         } else if (pass !== null) {
           alert("Contraseña incorrecta.");
         }
       }
     }
-
     window.addEventListener("keydown", secret);
     return () => window.removeEventListener("keydown", secret);
   }, []);
 
-  // Cuando opens un item, decidir qué video reproducir
-  function openItem(item) {
-    setSel(item);
-
-    if (Array.isArray(item.capitulos) && item.capitulos.length > 0) {
-      // SERIES → reproducir primer capítulo
-      setCurrentVideo(item.capitulos[0].url.trim());
-    } else {
-      // PELÍCULA → usar url normal
-      setCurrentVideo((item.video || "").trim());
+  // Cuando seleccionas una serie → cargar último capítulo visto
+  useEffect(() => {
+    if (sel && sel.tipo === "Serie") {
+      const last = localStorage.getItem("last_ep_" + sel.id);
+      setCurrentEp(last ? Number(last) : 0);
     }
+  }, [sel]);
+
+  function playEpisode(i) {
+    setCurrentEp(i);
+    if (sel) {
+      localStorage.setItem("last_ep_" + sel.id, i);
+    }
+  }
+
+  function getVideoURL() {
+    if (!sel) return "";
+
+    if (sel.tipo === "Serie") {
+      if (!sel.episodios || sel.episodios.length === 0) return "";
+      return sel.episodios[currentEp]?.url || "";
+    }
+
+    return sel.video || "";
   }
 
   return (
@@ -57,14 +69,12 @@ export default function Home() {
         style={{
           padding: 16,
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          gap: 12,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src="/logo.png" style={{ height: 48 }} alt="logo" />
-          <h1 style={{ margin: 0 }}>The Mayor</h1>
-        </div>
+        <img src="/logo.png" style={{ height: 48 }} />
+        <h1 style={{ margin: 0 }}>The Mayor</h1>
       </header>
 
       <main style={{ maxWidth: 1100, margin: "24px auto", padding: "0 16px" }}>
@@ -93,20 +103,19 @@ export default function Home() {
                     objectFit: "contain",
                     background: "#000",
                   }}
-                  alt={m.titulo || "imagen"}
                 />
+
                 <div style={{ padding: 10 }}>
                   <strong>{m.titulo}</strong>
 
                   <div style={{ color: "#9ca3af" }}>
-                    {m.tipo || "Película"} • {m.genero || "Sin género"} •{" "}
-                    {m.anio || "S/A"}
+                    {m.tipo} • {m.genero} • {m.anio}
                   </div>
 
-                  <p>{m.descripcion || "Sin descripción"}</p>
+                  <p>{m.descripcion}</p>
 
                   <button
-                    onClick={() => openItem(m)}
+                    onClick={() => setSel(m)}
                     style={{
                       background: "#e50914",
                       color: "#fff",
@@ -124,6 +133,7 @@ export default function Home() {
         )}
       </main>
 
+      {/* REPRODUCTOR */}
       {sel && (
         <div
           style={{
@@ -133,55 +143,64 @@ export default function Home() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            overflow: "auto",
-            padding: 20
+            padding: 20,
           }}
-          onClick={() => {
-            setSel(null);
-            setCurrentVideo("");
-          }}
+          onClick={() => setSel(null)}
         >
           <div
             style={{ width: "90%", maxWidth: 1000 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: 0 }}>{sel.titulo}</h3>
+            <h2>{sel.titulo}</h2>
 
-            {/* Reproductor */}
-            <div style={{ aspectRatio: "16/9", marginTop: 10 }}>
-              <video controls autoPlay style={{ width: "100%", height: "100%" }}>
-                <source src={currentVideo} type="video/mp4" />
-                Tu navegador no soporta video.
-              </video>
+            <div style={{ display: "flex", gap: 20 }}>
+              {/* VIDEO */}
+              <div style={{ flex: 3 }}>
+                <div style={{ aspectRatio: "16/9", background: "#000" }}>
+                  <video
+                    controls
+                    autoPlay
+                    style={{ width: "100%", height: "100%" }}
+                  >
+                    <source src={getVideoURL()} type="video/mp4" />
+                  </video>
+                </div>
+              </div>
+
+              {/* LISTA DE EPISODIOS */}
+              {sel.tipo === "Serie" && (
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#111",
+                    padding: 12,
+                    borderRadius: 8,
+                    maxHeight: "60vh",
+                    overflowY: "auto",
+                  }}
+                >
+                  <h3>Episodios</h3>
+
+                  {sel.episodios.map((ep, i) => (
+                    <div
+                      key={i}
+                      onClick={() => playEpisode(i)}
+                      style={{
+                        padding: 10,
+                        marginBottom: 6,
+                        background: i === currentEp ? "#e50914" : "#222",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <strong>{ep.titulo || `Episodio ${i + 1}`}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Lista de capítulos si aplica */}
-            {Array.isArray(sel.capitulos) && sel.capitulos.length > 0 && (
-              <div style={{ marginTop: 20 }}>
-                <h4>Capítulos</h4>
-                <ul>
-                  {sel.capitulos.map((c, i) => (
-                    <li key={i} style={{ marginBottom: 8 }}>
-                      <button
-                        onClick={() => setCurrentVideo(c.url.trim())}
-                        style={{
-                          background: "#1f2937",
-                          color: "#fff",
-                          padding: "6px 12px",
-                          borderRadius: 6,
-                          border: 0,
-                          cursor: "pointer"
-                        }}
-                      >
-                        {c.nombre || `Capítulo ${i + 1}`}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <p style={{ color: "#d1d5db" }}>{sel.descripcion}</p>
+            <p>{sel.descripcion}</p>
           </div>
         </div>
       )}
