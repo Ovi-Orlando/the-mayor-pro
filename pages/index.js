@@ -5,7 +5,7 @@ export default function Home() {
   const [sel, setSel] = useState(null);
   const [currentEp, setCurrentEp] = useState(0);
 
-  // Cargar películas desde el gist
+  // Cargar películas y series desde el gist
   useEffect(() => {
     fetch("/api/gist")
       .then((r) => r.json())
@@ -21,23 +21,7 @@ export default function Home() {
       .catch(() => setMovies([]));
   }, []);
 
-  // Acceso oculto admin (Shift + A)
-  useEffect(() => {
-    function secret(e) {
-      if (e.shiftKey && e.key.toLowerCase() === "a") {
-        const pass = prompt("Introduce tu contraseña:");
-        if (pass === "admin_ovi") {
-          window.location.href = "/admin";
-        } else if (pass !== null) {
-          alert("Contraseña incorrecta.");
-        }
-      }
-    }
-    window.addEventListener("keydown", secret);
-    return () => window.removeEventListener("keydown", secret);
-  }, []);
-
-  // Cuando seleccionas una serie → cargar último capítulo visto
+  // Cuando seleccionas una serie → cargar último episodio visto
   useEffect(() => {
     if (sel && sel.tipo === "Serie") {
       const last = localStorage.getItem("last_ep_" + sel.id);
@@ -122,6 +106,7 @@ export default function Home() {
                       border: 0,
                       padding: 8,
                       borderRadius: 8,
+                      cursor: "pointer",
                     }}
                   >
                     Ver
@@ -167,7 +152,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* LISTA DE EPISODIOS */}
+              {/* EPISODIOS */}
               {sel.tipo === "Serie" && (
                 <div
                   style={{
@@ -207,3 +192,4 @@ export default function Home() {
     </div>
   );
 }
+
