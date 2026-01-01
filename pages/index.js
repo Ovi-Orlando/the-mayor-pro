@@ -63,6 +63,22 @@ export default function Home() {
     return sel.video || "";
   }
 
+  // 👁️ Incrementar vistas
+  function addView(movie) {
+    if (!movie?.id) return;
+
+    fetch(`/api/view?id=${movie.id}`).catch(() => {});
+
+    // actualizar visualmente sin esperar recarga
+    setMovies((prev) =>
+      prev.map((m) =>
+        m.id === movie.id
+          ? { ...m, views: (m.views || 0) + 1 }
+          : m
+      )
+    );
+  }
+
   return (
     <div style={{ background: "#000", color: "#fff", minHeight: "100vh" }}>
       <header
@@ -115,7 +131,10 @@ export default function Home() {
                   <p>{m.descripcion}</p>
 
                   <button
-                    onClick={() => setSel(m)}
+                    onClick={() => {
+                      addView(m);
+                      setSel(m);
+                    }}
                     style={{
                       background: "#e50914",
                       color: "#fff",
@@ -126,6 +145,17 @@ export default function Home() {
                   >
                     Ver
                   </button>
+
+                  {/* 👁️ VISTAS */}
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontSize: 13,
+                      color: "#9ca3af",
+                    }}
+                  >
+                    👁️ {m.views || 0} vistas
+                  </div>
                 </div>
               </div>
             ))}
@@ -193,17 +223,4 @@ export default function Home() {
                         cursor: "pointer",
                       }}
                     >
-                      <strong>{ep.titulo || `Episodio ${i + 1}`}</strong>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <p>{sel.descripcion}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+                      <strong>{ep.titulo || `Episodio ${i + 1}`}<
