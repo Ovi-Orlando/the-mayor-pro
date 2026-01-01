@@ -223,4 +223,17 @@ export default function Home() {
                         cursor: "pointer",
                       }}
                     >
-                      <strong>{ep.titulo || `Episodio ${i + 1}`}<
+                      <strong>{ep.titulo || `Episodio ${i + 1}`}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <p>{sel.descripcion}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
