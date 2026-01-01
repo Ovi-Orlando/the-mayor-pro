@@ -6,7 +6,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "GIST_ID not set" });
     }
 
-    // 1️⃣ Obtener el gist actual
     const r = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: GITHUB_TOKEN
         ? { Authorization: `token ${GITHUB_TOKEN}` }
@@ -29,40 +28,53 @@ export default async function handler(req, res) {
       data = [];
     }
 
-    // 2️⃣ ID recibido desde el frontend
-    const { id } = req.query;
-    if (!id) {
-      return res.status(400).json({ error: "Missing id" });
+    // 🔹 GET → devolver vistas
+    if (req.method === "GET") {
+      const views = {};
+      data.forEach((item) => {
+        if (item.id != null) {
+          views[item.id] = item.views || 0;
+        }
+      });
+      return res.status(200).json(views);
     }
 
-    // 3️⃣ Incrementar vistas
-    const updated = data.map((item) => {
-      if (String(item.id) === String(id)) {
-        return {
-          ...item,
-          views: (item.views || 0) + 1,
-        };
+    // 🔹 POST → incrementar vistas
+    if (req.method === "POST") {
+      const { id } = req.query;
+      if (!id) {
+        return res.status(400).json({ error: "Missing id" });
       }
-      return item;
-    });
 
-    // 4️⃣ Guardar gist actualizado
-    await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        files: {
-          [filename]: {
-            content: JSON.stringify(updated, null, 2),
-          },
+      const updated = data.map((item) => {
+        if (String(item.id) === String(id)) {
+          return {
+            ...item,
+            views: (item.views || 0) + 1,
+          };
+        }
+        return item;
+      });
+
+      await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `token ${GITHUB_TOKEN}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          files: {
+            [filename]: {
+              content: JSON.stringify(updated, null, 2),
+            },
+          },
+        }),
+      });
 
-    return res.status(200).json({ ok: true });
+      return res.status(200).json({ ok: true });
+    }
+
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
     console.error("view api error", err);
     return res.status(500).json({ error: String(err) });
